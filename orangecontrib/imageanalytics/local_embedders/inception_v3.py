@@ -32,8 +32,10 @@ class InceptionV3Embedder(LocalEmbedder):
 
         return model_path
 
-
     def _load_model(self):
+        """
+        Load and store Tensorflow model
+        """
         tf1.disable_v2_behavior()
         model_path = self.get_model()
         with gfile.FastGFile(str(model_path), 'rb') as f:

@@ -7,13 +7,13 @@ import numpy as np
 from Orange.data import ContinuousVariable, Domain, Table, Variable
 from Orange.misc.utils.embedder_utils import EmbedderCache
 
-from orangecontrib.imageanalytics.local_embedders.inception_v3 import InceptionV3Embedder
 from orangecontrib.imageanalytics.local_embedders.squeez_net import SqueezeNetEmbedder
 from orangecontrib.imageanalytics.server_embedder import ServerEmbedder
 
+
 MODELS = {
     "inception-v3": {
-        "name": "Remote Inception v3",
+        "name": "Inception v3",
         "description": "Google's Inception v3 model trained on ImageNet.",
         "target_image_size": (299, 299),
         "layers": ["penultimate"],
@@ -23,20 +23,6 @@ MODELS = {
         # send less images since bottleneck are workers, this way we avoid
         # ReadTimeout because of images waiting in a queue at the server
         "batch_size": 100,
-    },
-    "tf-inception-v3": {
-        "name": "Local Inception v3",
-        "description": "Local Google's Inception v3 model trained on ImageNet.",
-        "target_image_size": (299, 299),
-        "layers": ["penultimate"],
-        "order": 0,
-        # batch size tell how many images we send in parallel, this number is
-        # high for inception since it has many workers, but other embedders
-        # send less images since bottleneck are workers, this way we avoid
-        # ReadTimeout because of images waiting in a queue at the server
-        "is_local": True,
-        "batch_size": 100,
-        "model_cls": InceptionV3Embedder
     },
     "painters": {
         "name": "Painters",
@@ -80,7 +66,7 @@ MODELS = {
         "batch_size": 20,
     },
     "squeezenet": {
-        "name": "Local SqueezeNet",
+        "name": "SqueezeNet",
         "description": "Deep model for image recognition that achieves \n"
         "AlexNet-level accuracy on ImageNet with \n"
         "50x fewer parameters.",
@@ -92,6 +78,31 @@ MODELS = {
         "model_cls": SqueezeNetEmbedder
     },
 }
+
+# Add TF_MODELS to MODELS if Tensorflow is found
+try:
+    import tensorflow
+    from orangecontrib.imageanalytics.local_embedders.inception_v3 import InceptionV3Embedder
+
+    MODELS.update({
+        "tf-inception-v3": {
+            "name": "Inception v3",
+            "description": "Local Google's Inception v3 model trained on ImageNet.",
+            "target_image_size": (299, 299),
+            "layers": ["penultimate"],
+            "order": 0,
+            # batch size tell how many images we send in parallel, this number is
+            # high for inception since it has many workers, but other embedders
+            # send less images since bottleneck are workers, this way we avoid
+            # ReadTimeout because of images waiting in a queue at the server
+            "is_local": True,
+            "batch_size": 100,
+            "model_cls": InceptionV3Embedder
+        },
+    })
+
+except ImportError:
+    print("Tensorflow is not installed, localm tensorflow models will not be used")
 
 
 class ImageEmbedder:
